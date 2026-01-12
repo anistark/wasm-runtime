@@ -1,15 +1,15 @@
-# Contributing to WASM Runtime
+# Contributing to WasmHub
 
 Thank you for your interest in contributing! This project aims to be community-driven.
 
 ## 📁 Project Structure
 
 ```sh
-wasm-runtime/
+wasmhub/
 ├── src/
 │   ├── lib.rs                       # 📦 Library code
 │   └── bin/
-│       └── wasm-runtime.rs          # 🔧 CLI binary (feature-gated)
+│       └── wasmhub.rs               # 🔧 CLI binary (feature-gated)
 │
 ├── runtimes/                        # 📁 WASM binaries (to be added)
 │   ├── nodejs/
@@ -31,7 +31,7 @@ wasm-runtime/
 
 The project is a single Rust crate with:
 - **Library API** (`src/lib.rs`) - Can be used programmatically
-- **CLI tool** (`src/bin/wasm-runtime.rs`) - Enabled with `--features cli`
+- **CLI tool** (`src/bin/wasmhub.rs`) - Enabled with `--features cli`
 
 ## 🚀 Ways to Contribute
 
@@ -53,8 +53,8 @@ The project is a single Rust crate with:
 
 ```sh
 # Clone repository
-git clone https://github.com/anistark/wasm-runtime.git
-cd wasm-runtime
+git clone https://github.com/anistark/wasmhub.git
+cd wasmhub
 
 # Build library only
 cargo build
@@ -73,18 +73,6 @@ cargo install --path . --features cli
 ```
 
 ## 📝 Code Style
-
-We follow standard Rust conventions:
-
-```sh
-# Format code
-cargo fmt
-
-# Lint code
-cargo clippy -- -D warnings
-```
-
-Or use the justfile for convenience:
 
 ```sh
 # Format code
@@ -202,7 +190,7 @@ Be respectful, inclusive, and collaborative. We're building this together.
 
 ## 📞 Questions?
 
-- Open a [Discussion](https://github.com/anistark/wasm-runtime/discussions)
+- Open a [Discussion](https://github.com/anistark/wasmhub/discussions)
 - Ask on Discord (coming soon)
 - Email: ani@anistark.com
 
@@ -272,7 +260,7 @@ cargo build --release --features cli
 ### Project Layout
 
 - **src/lib.rs** - Public API for the library
-- **src/bin/wasm-runtime.rs** - CLI application code
+- **src/bin/wasmhub.rs** - CLI application code
 - **runtimes/** - Downloaded WASM runtime binaries
 - **Cargo.toml** - Package manifest with `cli` feature flag
 

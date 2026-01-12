@@ -1,12 +1,12 @@
-# 🚀 WASM Runtime
+# 🚀 WasmHub
 
-**Open-source collection of WebAssembly language runtimes**
+**Open-source WASM Hub of language runtimes**
 
 Download and manage WASM runtimes for Node.js, Python, Ruby, PHP, Go, and more - all in one place.
 
-[![Crates.io](https://img.shields.io/crates/v/wasm-runtime.svg)](https://crates.io/crates/wasm-runtime)
+[![Crates.io](https://img.shields.io/crates/v/wasmhub.svg)](https://crates.io/crates/wasmhub)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/anistark/wasm-runtime/workflows/CI/badge.svg)](https://github.com/anistark/wasm-runtime/actions)
+[![CI](https://github.com/anistark/wasmhub/workflows/CI/badge.svg)](https://github.com/anistark/wasmhub/actions)
 
 ---
 
@@ -29,11 +29,11 @@ A centralized, open-source repository providing **versioned WASM language runtim
 ```toml
 # Cargo.toml
 [dependencies]
-wasm-runtime = "0.1"
+wasmhub = "0.1"
 ```
 
 ```rust
-use wasm_runtime::{RuntimeLoader, Language};
+use wasmhub::{RuntimeLoader, Language};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,24 +51,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```sh
 # Install
-cargo install wasm-runtime --features cli
+cargo install wasmhub --features cli
 
 # Download runtimes
-wasm-runtime get nodejs@20.2.0
-wasm-runtime get python@3.11.7
+wasmhub get nodejs@20.2.0
+wasmhub get python@3.11.7
 
 # List available
-wasm-runtime list
+wasmhub list
 
 # Show info
-wasm-runtime info nodejs
+wasmhub info nodejs
 ```
 
 ### Via CDN (Browser)
 
 ```javascript
 // Direct download
-const url = 'https://cdn.jsdelivr.net/gh/anistark/wasm-runtime@latest/runtimes/nodejs/v20.2.0.wasm';
+const url = 'https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest/runtimes/nodejs/v20.2.0.wasm';
 const response = await fetch(url);
 const wasmBytes = await response.arrayBuffer();
 ```
@@ -116,7 +116,7 @@ let nodejs_wasm = loader.get_runtime(Language::NodeJs, "20.2.0").await?;
 ### 2. **Serverless Edge Functions**
 Deploy language runtimes to Cloudflare Workers, Deno Deploy, etc.:
 ```sh
-wasm-runtime get python@3.11.7
+wasmhub get python@3.11.7
 # Deploy to edge with Python support
 ```
 
@@ -140,7 +140,7 @@ executeCode(studentCode, runtime);
 
 ## 📖 Documentation
 
-- **[API Documentation](https://docs.rs/wasm-runtime)** - Full Rust API reference
+- **[API Documentation](https://docs.rs/wasmhub)** - Full Rust API reference
 - **[Contributing Guide](CONTRIBUTING.md)** - Help build this project
 
 ---
@@ -151,7 +151,7 @@ executeCode(studentCode, runtime);
 We welcome contributions! This project aims to be **community-driven**.
 
 **How to help:**
-- 🐛 Report bugs or request features via [Issues](https://github.com/anistark/wasm-runtime/issues)
+- 🐛 Report bugs or request features via [Issues](https://github.com/anistark/wasmhub/issues)
 - 🔧 Submit PRs for new runtimes or improvements
 - 📖 Improve documentation
 - ⭐ Star the repo to show support
@@ -162,7 +162,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🌐 Community & Support
 
-- **GitHub Discussions:** [Ask questions, share ideas](https://github.com/anistark/wasm-runtime/discussions)
+- **GitHub Discussions:** [Ask questions, share ideas](https://github.com/anistark/wasmhub/discussions)
 - **Twitter:** [@anistark](https://x.com/kranirudha)
 
 ---

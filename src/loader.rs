@@ -8,8 +8,8 @@ use std::path::PathBuf;
 #[cfg(feature = "progress")]
 use futures_util::StreamExt;
 
-const GITHUB_RELEASES_BASE: &str = "https://github.com/anistark/wasm-runtime/releases/download";
-const JSDELIVR_BASE: &str = "https://cdn.jsdelivr.net/gh/anistark/wasm-runtime@latest";
+const GITHUB_RELEASES_BASE: &str = "https://github.com/anistark/wasmhub/releases/download";
+const JSDELIVR_BASE: &str = "https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest";
 
 #[derive(Debug, Clone)]
 pub enum CdnSource {
@@ -326,11 +326,11 @@ mod tests {
     fn test_cdn_source_base_url() {
         assert_eq!(
             CdnSource::GitHubReleases.base_url(),
-            "https://github.com/anistark/wasm-runtime/releases/download"
+            "https://github.com/anistark/wasmhub/releases/download"
         );
         assert_eq!(
             CdnSource::JsDelivr.base_url(),
-            "https://cdn.jsdelivr.net/gh/anistark/wasm-runtime@latest"
+            "https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest"
         );
     }
 

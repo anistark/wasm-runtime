@@ -1,4 +1,4 @@
-//! # WASM Runtime
+//! # WasmHub
 //!
 //! A library for downloading and managing WebAssembly runtimes for multiple languages.
 //!
@@ -13,7 +13,7 @@
 //! ## Example
 //!
 //! ```no_run
-//! use wasm_runtime::{RuntimeLoader, Language};
+//! use wasmhub::{RuntimeLoader, Language};
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! let loader = RuntimeLoader::new()?;

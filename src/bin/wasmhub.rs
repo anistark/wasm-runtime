@@ -1,10 +1,10 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use wasm_runtime::{CacheManager, Language, RuntimeLoader};
+use wasmhub::{CacheManager, Language, RuntimeLoader};
 
 #[derive(Parser)]
-#[command(name = "wasm-runtime")]
+#[command(name = "wasmhub")]
 #[command(author, version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]

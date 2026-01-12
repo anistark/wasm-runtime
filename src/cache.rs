@@ -22,7 +22,7 @@ impl CacheManager {
     pub fn default_cache_dir() -> Result<PathBuf> {
         let cache_dir = dirs::cache_dir()
             .ok_or_else(|| Error::Other("Could not determine cache directory".to_string()))?
-            .join("wasm-runtime");
+            .join("wasmhub");
         Ok(cache_dir)
     }
 
