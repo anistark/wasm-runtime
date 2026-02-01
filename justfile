@@ -64,3 +64,15 @@ ci: format-check lint test
 # Install CLI locally
 install:
     cargo install --path . --features cli
+
+# Build Docker image for WASM compilation
+docker-build:
+    docker build -t wasmhub-builder .
+
+# Run Docker container with current directory mounted
+docker-run:
+    docker run --rm -it -v "$(pwd):/workspace" wasmhub-builder
+
+# Build runtimes inside Docker container
+docker-build-runtimes:
+    docker run --rm -v "$(pwd):/workspace" wasmhub-builder ./scripts/build-all.sh
