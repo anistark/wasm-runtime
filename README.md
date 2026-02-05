@@ -67,8 +67,8 @@ wasmhub info nodejs
 ### Via CDN (Browser)
 
 ```javascript
-// Direct download
-const url = 'https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest/runtimes/nodejs/v20.2.0.wasm';
+// From GitHub Releases
+const url = 'https://github.com/anistark/wasmhub/releases/latest/download/go-1.23.wasm';
 const response = await fetch(url);
 const wasmBytes = await response.arrayBuffer();
 ```
@@ -100,6 +100,50 @@ const wasmBytes = await response.arrayBuffer();
 | **Rust** | Latest | Varies | Native WASM target |
 
 *More languages coming soon! PRs welcome.*
+
+---
+
+## 📥 Downloading Runtimes
+
+WASM runtime binaries are built and published automatically on each [GitHub Release](https://github.com/anistark/wasmhub/releases).
+
+### From GitHub Releases
+
+```sh
+# Download the latest Go runtime
+curl -LO https://github.com/anistark/wasmhub/releases/latest/download/go-1.23.wasm
+
+# Download a specific version's manifest
+curl -LO https://github.com/anistark/wasmhub/releases/download/v0.1.0/manifest.json
+```
+
+### Using the CLI
+
+```sh
+# The CLI automatically fetches from releases
+wasmhub get go@1.23
+```
+
+### Manifest Format
+
+Each runtime has a `manifest.json` describing available versions:
+
+```json
+{
+    "language": "go",
+    "latest": "1.23",
+    "versions": {
+        "1.23": {
+            "file": "go-1.23.wasm",
+            "size": 266712,
+            "sha256": "efa1e13f39dfd3783d0eff5669088ab99a1ea1d38ac79f29b02e2ad8ddfea29d",
+            "released": "2026-02-03T13:23:13Z",
+            "wasi": "wasip1",
+            "features": []
+        }
+    }
+}
+```
 
 ---
 

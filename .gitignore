@@ -17,6 +17,9 @@ Thumbs.db
 # Runtime binaries (large files - use Git LFS or releases)
 runtimes/**/*.wasm
 
+# Build output
+/build/
+
 # Cache
 .cache/
 

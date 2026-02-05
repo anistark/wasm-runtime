@@ -13,22 +13,22 @@ echo "======================"
 echo ""
 
 if [[ "${BUILD_GO}" == "true" ]]; then
-    if [[ -d "${PROJECT_ROOT}/src-runtimes/go" ]]; then
+    if [[ -f "${PROJECT_ROOT}/runtimes/go/main.go" ]]; then
         echo "Building Go runtime..."
-        "${SCRIPT_DIR}/build-go.sh" "${PROJECT_ROOT}/src-runtimes/go/main.go"
+        "${SCRIPT_DIR}/build-go.sh" "${PROJECT_ROOT}/runtimes/go/main.go"
         echo ""
     else
-        echo "Skipping Go: src-runtimes/go not found"
+        echo "Skipping Go: runtimes/go/main.go not found"
     fi
 fi
 
 if [[ "${BUILD_RUST}" == "true" ]]; then
-    if [[ -d "${PROJECT_ROOT}/src-runtimes/rust" ]]; then
+    if [[ -d "${PROJECT_ROOT}/runtimes/rust" ]]; then
         echo "Building Rust runtime..."
-        "${SCRIPT_DIR}/build-rust.sh" "${PROJECT_ROOT}/src-runtimes/rust"
+        "${SCRIPT_DIR}/build-rust.sh" "${PROJECT_ROOT}/runtimes/rust"
         echo ""
     else
-        echo "Skipping Rust: src-runtimes/rust not found"
+        echo "Skipping Rust: runtimes/rust not found"
     fi
 fi
 

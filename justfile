@@ -50,13 +50,132 @@ clean:
 docs:
     cargo doc --all-features --open
 
-# Publish to crates.io (requires confirmation)
+# Publish release (extracts version from Cargo.toml)
 publish:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+    echo "Detected version: ${VERSION}"
+    just release "${VERSION}"
+
+# Publish to crates.io only (no git tag or GitHub release)
+publish-crates:
     cargo publish
 
 # Publish dry-run to check everything before actual publish
-publish-dry-run:
+publish-check:
     cargo publish --dry-run
+
+# Publish to GitHub only (no crates.io), extracts version from Cargo.toml
+publish-github:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+    echo "Detected version: ${VERSION}"
+    just release-github "${VERSION}"
+
+# Create a new release (tag + GitHub release + crates.io)
+# Usage: just release 0.2.0
+release version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    VERSION="{{version}}"
+    TAG="v${VERSION}"
+
+    echo "Preparing release ${TAG}..."
+
+    # Check for uncommitted changes
+    if [[ -n "$(git status --porcelain)" ]]; then
+        echo "Error: Working directory has uncommitted changes"
+        exit 1
+    fi
+
+    # Check we're on main branch
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "${BRANCH}" != "main" ]]; then
+        echo "Warning: Not on main branch (currently on ${BRANCH})"
+        read -p "Continue anyway? [y/N] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+
+    # Verify version matches Cargo.toml
+    CARGO_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+    if [[ "${CARGO_VERSION}" != "${VERSION}" ]]; then
+        echo "Error: Version mismatch - Cargo.toml has ${CARGO_VERSION}, releasing ${VERSION}"
+        echo "Update Cargo.toml version first"
+        exit 1
+    fi
+
+    # Run CI checks
+    echo "Running CI checks..."
+    just ci
+
+    # Dry-run crates.io publish
+    echo "Checking crates.io publish..."
+    cargo publish --dry-run
+
+    echo ""
+    echo "Ready to release ${TAG}"
+    echo "This will:"
+    echo "  1. Create and push git tag ${TAG}"
+    echo "  2. Create GitHub release (triggers WASM builds)"
+    echo "  3. Publish to crates.io"
+    echo ""
+    read -p "Proceed? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Aborted"
+        exit 1
+    fi
+
+    # Create and push tag
+    echo "Creating tag ${TAG}..."
+    git tag -a "${TAG}" -m "Release ${TAG}"
+    git push origin "${TAG}"
+
+    # Create GitHub release
+    echo "Creating GitHub release..."
+    gh release create "${TAG}" --generate-notes --title "Release ${TAG}"
+
+    # Publish to crates.io
+    echo "Publishing to crates.io..."
+    cargo publish
+
+    echo ""
+    echo "Release ${TAG} complete!"
+    echo "GitHub Actions is now building WASM runtimes and CLI binaries."
+    echo "Check progress at: https://github.com/anistark/wasmhub/actions"
+
+# Create a release without publishing to crates.io
+# Usage: just release-github 0.2.0
+release-github version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    VERSION="{{version}}"
+    TAG="v${VERSION}"
+
+    echo "Creating GitHub release ${TAG}..."
+
+    if [[ -n "$(git status --porcelain)" ]]; then
+        echo "Error: Working directory has uncommitted changes"
+        exit 1
+    fi
+
+    read -p "Create tag ${TAG} and GitHub release? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+
+    git tag -a "${TAG}" -m "Release ${TAG}"
+    git push origin "${TAG}"
+    gh release create "${TAG}" --generate-notes --title "Release ${TAG}"
+
+    echo "GitHub release ${TAG} created!"
+    echo "Check build progress at: https://github.com/anistark/wasmhub/actions"
 
 # Run CI checks locally (format, lint, test)
 ci: format-check lint test

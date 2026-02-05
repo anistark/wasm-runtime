@@ -1,0 +1,14 @@
+{
+    "language": "go",
+    "latest": "1.23",
+    "versions": {
+        "1.23": {
+            "file": "go-1.23.wasm",
+            "size": 266712,
+            "sha256": "efa1e13f39dfd3783d0eff5669088ab99a1ea1d38ac79f29b02e2ad8ddfea29d",
+            "released": "2026-02-03T13:23:13Z",
+            "wasi": "wasip1",
+            "features": []
+        }
+    }
+}

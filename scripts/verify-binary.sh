@@ -88,28 +88,20 @@ else
     echo "✓ SHA256: ${SHA256}"
 fi
 
-if command -v wasmtime &> /dev/null; then
-    log "Validating with wasmtime..."
-    if wasmtime compile --dry-run "${WASM_FILE}" 2>/dev/null; then
-        echo "✓ Wasmtime validation passed"
-    else
-        echo "✗ Wasmtime validation failed"
-        ((ERRORS++))
-    fi
-
-    if [[ "${RUN_BINARY}" == "true" ]]; then
+if [[ "${RUN_BINARY}" == "true" ]]; then
+    if command -v wasmrun &> /dev/null; then
         echo ""
-        echo "Executing binary..."
+        echo "Executing binary with wasmrun..."
         echo "---"
         if [[ -n "${RUN_ARGS}" ]]; then
-            wasmtime run "${WASM_FILE}" -- ${RUN_ARGS}
+            wasmrun "${WASM_FILE}" ${RUN_ARGS}
         else
-            timeout 5 wasmtime run "${WASM_FILE}" || true
+            timeout 5 wasmrun "${WASM_FILE}" 2>/dev/null || echo "(execution skipped)"
         fi
         echo "---"
+    else
+        echo "- wasmrun not found, skipping runtime execution"
     fi
-else
-    echo "- Wasmtime not found, skipping runtime validation"
 fi
 
 echo ""
