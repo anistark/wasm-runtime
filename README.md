@@ -39,10 +39,10 @@ use wasmhub::{RuntimeLoader, Language};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let loader = RuntimeLoader::new();
 
-    // Download Node.js v20.2.0 (auto-cached)
-    let nodejs = loader.get_runtime(Language::NodeJs, "20.2.0").await?;
+    // Download Go 1.23 (auto-cached)
+    let go = loader.get_runtime(Language::Go, "1.23").await?;
 
-    println!("Runtime at: {}", nodejs.path.display());
+    println!("Runtime at: {}", go.path.display());
     Ok(())
 }
 ```
@@ -54,14 +54,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 cargo install wasmhub --features cli
 
 # Download runtimes
-wasmhub get nodejs@20.2.0
-wasmhub get python@3.11.7
+wasmhub get go@1.23
+wasmhub get rust@1.82
 
 # List available
 wasmhub list
 
 # Show info
-wasmhub info nodejs
+wasmhub info go
 ```
 
 ### Via CDN (Browser)
@@ -77,7 +77,7 @@ const wasmBytes = await response.arrayBuffer();
 
 ## 🌟 Features
 
-- ✅ **Multi-language support** - Node.js, Python, Ruby, PHP, Go, Rust
+- ✅ **Multi-language support** - Go, Rust (more coming soon)
 - ✅ **Version management** - Pin to specific versions
 - ✅ **Smart caching** - Download once, use forever
 - ✅ **Type-safe API** - Rust library with compile-time guarantees
@@ -90,16 +90,16 @@ const wasmBytes = await response.arrayBuffer();
 
 ## 📦 Available Runtimes
 
-| Language | Versions | Size | Source |
-|----------|----------|------|--------|
-| **Node.js** | 18.x, 20.x, 22.x | ~50MB | [nodebox](https://github.com/codesandbox/nodebox) |
-| **Python** | 3.11.x, 3.12.x | ~35MB | [Pyodide](https://pyodide.org) |
-| **Ruby** | 3.2.x | ~20MB | [ruby.wasm](https://github.com/ruby/ruby.wasm) |
-| **PHP** | 8.3.x | ~15MB | [php-wasm](https://wasmer.io) |
-| **Go** | 1.21.x | ~30MB | [TinyGo](https://tinygo.org) |
-| **Rust** | Latest | Varies | Native WASM target |
+| Language | Versions | Size | Status | About |
+|----------|----------|------|--------|-------|
+| **Go** | 1.23 | 261KB | 🚀 Upcoming Release | Built with TinyGo, supports filesystem, env, args, stdio |
+| **Rust** | 1.82 | 76KB | 🚀 Upcoming Release |  Full std library support with wasm32-wasip1 target |
+| **Node.js** | - | - | 🚧 Coming Soon | - |
+| **Python** | - | - | 🚧 Coming Soon | - |
+| **Ruby** | - | - | 🚧 Coming Soon | - |
+| **PHP** | - | - | 🚧 Coming Soon | - |
 
-*More languages coming soon! PRs welcome.*
+*More languages and versions coming soon! Contributions welcome.* ✨
 
 ---
 

@@ -1,0 +1,14 @@
+{
+    "language": "rust",
+    "latest": "1.82",
+    "versions": {
+        "1.82": {
+            "file": "rust-1.82.wasm",
+            "size": 77433,
+            "sha256": "5ae0e8d64f2c952738b12418b9f27cbbf0f662d7366c97b2e4c88fb893c225ff",
+            "released": "2026-02-05T19:53:00Z",
+            "wasi": "wasip1",
+            "features": []
+        }
+    }
+}
