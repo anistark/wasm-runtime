@@ -8,7 +8,7 @@ use std::path::PathBuf;
 #[cfg(feature = "progress")]
 use futures_util::StreamExt;
 
-const GITHUB_RELEASES_BASE: &str = "https://github.com/anistark/wasmhub/releases/download";
+const GITHUB_RELEASES_BASE: &str = "https://github.com/anistark/wasmhub/releases/latest/download";
 const JSDELIVR_BASE: &str = "https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest";
 
 #[derive(Debug, Clone)]
@@ -92,22 +92,17 @@ impl RuntimeLoader {
     }
 
     fn build_download_url(&self, source: &CdnSource, language: Language, version: &str) -> String {
+        let filename = format!("{}-{}.wasm", language.as_str(), version);
         match source {
             CdnSource::GitHubReleases => {
-                format!(
-                    "{}/v{}/{}-{}.wasm",
-                    source.base_url(),
-                    version,
-                    language.as_str(),
-                    version
-                )
+                format!("{}/{}", source.base_url(), filename)
             }
             CdnSource::JsDelivr => {
                 format!(
-                    "{}/runtimes/{}/{}.wasm",
+                    "{}/runtimes/{}/{}",
                     source.base_url(),
                     language.as_str(),
-                    version
+                    filename
                 )
             }
         }
@@ -199,14 +194,7 @@ impl RuntimeLoader {
     async fn fetch_global_manifest(&self) -> Result<GlobalManifest> {
         let mut last_error = None;
         for source in &self.cdn_sources {
-            let url = match source {
-                CdnSource::GitHubReleases => {
-                    format!("{}/latest/manifest.json", source.base_url())
-                }
-                CdnSource::JsDelivr => {
-                    format!("{}/manifest.json", source.base_url())
-                }
-            };
+            let url = format!("{}/manifest.json", source.base_url());
 
             match self.fetch_json(&url).await {
                 Ok(manifest) => return Ok(manifest),
@@ -225,11 +213,7 @@ impl RuntimeLoader {
         for source in &self.cdn_sources {
             let url = match source {
                 CdnSource::GitHubReleases => {
-                    format!(
-                        "{}/latest/runtimes/{}/manifest.json",
-                        source.base_url(),
-                        language.as_str()
-                    )
+                    format!("{}/{}-manifest.json", source.base_url(), language.as_str())
                 }
                 CdnSource::JsDelivr => {
                     format!(
@@ -326,7 +310,7 @@ mod tests {
     fn test_cdn_source_base_url() {
         assert_eq!(
             CdnSource::GitHubReleases.base_url(),
-            "https://github.com/anistark/wasmhub/releases/download"
+            "https://github.com/anistark/wasmhub/releases/latest/download"
         );
         assert_eq!(
             CdnSource::JsDelivr.base_url(),
@@ -339,12 +323,12 @@ mod tests {
         let loader = RuntimeLoader::new().unwrap();
 
         let url = loader.build_download_url(&CdnSource::GitHubReleases, Language::Python, "3.11.7");
-        assert!(url.contains("releases/download"));
+        assert!(url.contains("releases/latest/download"));
         assert!(url.contains("python-3.11.7.wasm"));
 
         let url = loader.build_download_url(&CdnSource::JsDelivr, Language::Python, "3.11.7");
         assert!(url.contains("cdn.jsdelivr.net"));
-        assert!(url.contains("runtimes/python/3.11.7.wasm"));
+        assert!(url.contains("runtimes/python/python-3.11.7.wasm"));
     }
 
     #[test]

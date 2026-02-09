@@ -31,9 +31,10 @@ pub struct RuntimeVersion {
     pub sha256: String,
     pub released: String,
     #[serde(default)]
-    pub wasi: bool,
+    pub wasi: String,
     #[serde(default)]
     pub features: Vec<String>,
+    #[serde(default)]
     pub url: String,
 }
 
@@ -101,13 +102,13 @@ impl RuntimeVersion {
             size,
             sha256,
             released,
-            wasi: false,
+            wasi: String::new(),
             features: Vec::new(),
             url,
         }
     }
 
-    pub fn with_wasi(mut self, wasi: bool) -> Self {
+    pub fn with_wasi(mut self, wasi: String) -> Self {
         self.wasi = wasi;
         self
     }
@@ -189,10 +190,10 @@ mod tests {
         );
         assert_eq!(version.file, "python-3.11.7.wasm");
         assert_eq!(version.size, 1024);
-        assert!(!version.wasi);
+        assert!(version.wasi.is_empty());
 
-        version = version.with_wasi(true);
-        assert!(version.wasi);
+        version = version.with_wasi("wasip1".to_string());
+        assert_eq!(version.wasi, "wasip1");
 
         version.add_feature("async".to_string());
         version.add_feature("filesystem".to_string());
