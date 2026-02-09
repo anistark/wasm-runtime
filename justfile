@@ -192,6 +192,10 @@ docker-build:
 docker-run:
     docker run --rm -it -v "$(pwd):/workspace" wasmhub-builder
 
+# Generate global manifest.json from per-runtime manifests
+manifest:
+    ./scripts/generate-global-manifest.sh
+
 # Build runtimes inside Docker container
 docker-build-runtimes:
     docker run --rm -v "$(pwd):/workspace" wasmhub-builder ./scripts/build-all.sh

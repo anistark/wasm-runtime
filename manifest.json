@@ -1,0 +1,22 @@
+{
+  "version": "0.0.2",
+  "build_date": "2026-02-07T07:04:08Z",
+  "languages": {
+    "go": {
+      "latest": "1.23",
+      "versions": [
+        "1.23"
+      ],
+      "source": "https://go.dev/",
+      "license": "BSD-3-Clause"
+    },
+    "rust": {
+      "latest": "1.82",
+      "versions": [
+        "1.82"
+      ],
+      "source": "https://www.rust-lang.org/",
+      "license": "MIT/Apache-2.0"
+    }
+  }
+}

@@ -45,4 +45,8 @@ if [[ "${VERIFY}" == "true" ]]; then
     done
 fi
 
+echo "Generating global manifest..."
+"${SCRIPT_DIR}/generate-global-manifest.sh"
+echo ""
+
 echo "Build complete!"

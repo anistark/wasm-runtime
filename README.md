@@ -7,6 +7,7 @@ Download and manage WASM runtimes for Node.js, Python, Ruby, PHP, Go, and more -
 [![Crates.io](https://img.shields.io/crates/v/wasmhub.svg)](https://crates.io/crates/wasmhub)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/anistark/wasmhub/workflows/CI/badge.svg)](https://github.com/anistark/wasmhub/actions)
+[![Build Runtimes](https://github.com/anistark/wasmhub/workflows/Build%20Runtimes/badge.svg)](https://github.com/anistark/wasmhub/actions/workflows/build-runtimes.yml)
 
 ---
 

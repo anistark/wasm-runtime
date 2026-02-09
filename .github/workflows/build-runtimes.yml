@@ -1,0 +1,132 @@
+name: Build Runtimes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'runtimes/**'
+      - 'scripts/**'
+      - 'Dockerfile'
+      - '.github/workflows/build-runtimes.yml'
+  workflow_dispatch:
+    inputs:
+      build_go:
+        description: 'Build Go runtime'
+        required: false
+        default: 'true'
+        type: boolean
+      build_rust:
+        description: 'Build Rust runtime'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.runtime }} ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: go
+            version: '1.23'
+            env_flag: BUILD_GO
+          - runtime: rust
+            version: '1.82'
+            env_flag: BUILD_RUST
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if runtime should build
+        id: should-build
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            FLAG="${{ matrix.env_flag }}"
+            VALUE="${{ github.event.inputs[format('build_{0}', matrix.runtime)] }}"
+            echo "build=${VALUE:-true}" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: wasmhub-builder:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build ${{ matrix.runtime }} runtime
+        if: steps.should-build.outputs.build == 'true'
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            -e BUILD_GO=${{ matrix.runtime == 'go' && 'true' || 'false' }} \
+            -e BUILD_RUST=${{ matrix.runtime == 'rust' && 'true' || 'false' }} \
+            -e VERIFY=true \
+            wasmhub-builder:latest \
+            ./scripts/build-all.sh
+
+      - name: List built artifacts
+        if: steps.should-build.outputs.build == 'true'
+        run: |
+          echo "=== WASM binaries ==="
+          find runtimes/${{ matrix.runtime }} -name "*.wasm" -exec ls -lh {} \;
+          echo ""
+          echo "=== Manifest ==="
+          cat runtimes/${{ matrix.runtime }}/manifest.json
+
+      - name: Upload runtime artifact
+        if: steps.should-build.outputs.build == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.runtime }}-${{ matrix.version }}-runtime
+          path: |
+            runtimes/${{ matrix.runtime }}/*.wasm
+            runtimes/${{ matrix.runtime }}/manifest.json
+          retention-days: 30
+
+  global-manifest:
+    name: Generate Global Manifest
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all runtime artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Merge artifacts into runtimes
+        run: |
+          for dir in artifacts/*/; do
+            runtime=$(basename "$dir" | sed 's/-[0-9].*-runtime$//')
+            if [[ -d "runtimes/${runtime}" ]]; then
+              cp -v "$dir"* "runtimes/${runtime}/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Generate global manifest
+        run: ./scripts/generate-global-manifest.sh
+
+      - name: Upload global manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-manifest
+          path: manifest.json
+          retention-days: 30
