@@ -47,31 +47,35 @@ jobs:
             wasmhub-builder:latest \
             ./scripts/build-all.sh
 
-      - name: List built artifacts
+      - name: Prepare release assets
         run: |
-          echo "Built WASM files:"
-          find runtimes -name "*.wasm" -exec ls -lh {} \;
-          echo ""
-          echo "Manifest files:"
-          find runtimes -name "manifest.json" -exec cat {} \;
+          mkdir -p release-assets
 
-      - name: Upload Go runtime
+          # Copy WASM binaries
+          find runtimes -name "*.wasm" -exec cp {} release-assets/ \;
+
+          # Copy per-runtime manifests with language prefix to avoid naming conflicts
+          for manifest in runtimes/*/manifest.json; do
+            lang=$(basename "$(dirname "$manifest")")
+            cp "$manifest" "release-assets/${lang}-manifest.json"
+          done
+
+          # Copy global manifest
+          cp manifest.json release-assets/manifest.json
+
+          # Generate SHA256SUMS
+          cd release-assets
+          sha256sum * > SHA256SUMS
+          cd ..
+
+          echo "=== Release assets ==="
+          ls -lh release-assets/
+
+      - name: Upload release assets
         if: ${{ !inputs.dry_run }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            runtimes/go/*.wasm
-            runtimes/go/manifest.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Rust runtime
-        if: ${{ !inputs.dry_run && hashFiles('runtimes/rust/*.wasm') != '' }}
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            runtimes/rust/*.wasm
-            runtimes/rust/manifest.json
+          files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -80,13 +84,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wasm-runtimes
-          path: |
-            runtimes/**/*.wasm
-            runtimes/**/manifest.json
+          path: release-assets/*
 
   build-cli:
-    name: Build CLI Binaries
+    name: Build CLI (${{ matrix.artifact }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         include:
@@ -128,17 +132,15 @@ jobs:
 
       - name: Rename binary (Unix)
         if: runner.os != 'Windows'
-        run: |
-          cp target/${{ matrix.target }}/release/wasmhub ${{ matrix.artifact }}
+        run: cp target/${{ matrix.target }}/release/wasmhub ${{ matrix.artifact }}
 
       - name: Rename binary (Windows)
         if: runner.os == 'Windows'
-        run: |
-          cp target/${{ matrix.target }}/release/wasmhub.exe ${{ matrix.artifact }}
+        run: cp target/${{ matrix.target }}/release/wasmhub.exe ${{ matrix.artifact }}
 
       - name: Upload CLI binary
         if: ${{ !inputs.dry_run }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.artifact }}
         env:
