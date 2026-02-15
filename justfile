@@ -199,3 +199,15 @@ manifest:
 # Build runtimes inside Docker container
 docker-build-runtimes:
     docker run --rm -v "$(pwd):/workspace" wasmhub-builder ./scripts/build-all.sh
+
+# Optimize WASM binaries (requires wasm-opt)
+optimize:
+    ./scripts/optimize-wasm.sh
+
+# Run full publish workflow (build, optimize, verify, release)
+publish-release:
+    ./scripts/publish.sh
+
+# Dry-run publish (build, optimize, verify — no release)
+publish-dry-run:
+    ./scripts/publish.sh --dry-run

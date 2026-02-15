@@ -4,12 +4,17 @@ use crate::manifest::{GlobalManifest, RuntimeManifest};
 use crate::runtime::{Language, Runtime};
 use reqwest::Client;
 use std::path::PathBuf;
+use std::time::Duration;
 
 #[cfg(feature = "progress")]
 use futures_util::StreamExt;
 
 const GITHUB_RELEASES_BASE: &str = "https://github.com/anistark/wasmhub/releases/latest/download";
 const JSDELIVR_BASE: &str = "https://cdn.jsdelivr.net/gh/anistark/wasmhub@latest";
+
+const DEFAULT_MAX_RETRIES: u32 = 3;
+const DEFAULT_INITIAL_BACKOFF_MS: u64 = 500;
+const DEFAULT_MAX_BACKOFF_MS: u64 = 30_000;
 
 #[derive(Debug, Clone)]
 pub enum CdnSource {
@@ -30,6 +35,9 @@ pub struct RuntimeLoader {
     cache: CacheManager,
     client: Client,
     cdn_sources: Vec<CdnSource>,
+    max_retries: u32,
+    initial_backoff_ms: u64,
+    max_backoff_ms: u64,
     #[cfg(feature = "progress")]
     show_progress: bool,
 }
@@ -40,6 +48,9 @@ impl RuntimeLoader {
             cache: CacheManager::new()?,
             client: Client::new(),
             cdn_sources: vec![CdnSource::GitHubReleases, CdnSource::JsDelivr],
+            max_retries: DEFAULT_MAX_RETRIES,
+            initial_backoff_ms: DEFAULT_INITIAL_BACKOFF_MS,
+            max_backoff_ms: DEFAULT_MAX_BACKOFF_MS,
             #[cfg(feature = "progress")]
             show_progress: false,
         })
@@ -109,6 +120,32 @@ impl RuntimeLoader {
     }
 
     async fn download_from_url(&self, url: &str) -> Result<Vec<u8>> {
+        let mut last_error = None;
+
+        for attempt in 0..=self.max_retries {
+            if attempt > 0 {
+                let backoff = std::cmp::min(
+                    self.initial_backoff_ms * 2u64.pow(attempt - 1),
+                    self.max_backoff_ms,
+                );
+                tokio::time::sleep(Duration::from_millis(backoff)).await;
+            }
+
+            match self.attempt_download(url).await {
+                Ok(data) => return Ok(data),
+                Err(e) => {
+                    if !Self::is_retryable(&e) {
+                        return Err(e);
+                    }
+                    last_error = Some(e);
+                }
+            }
+        }
+
+        Err(last_error.unwrap_or_else(|| Error::Other("Download failed after retries".to_string())))
+    }
+
+    async fn attempt_download(&self, url: &str) -> Result<Vec<u8>> {
         #[cfg(feature = "progress")]
         if self.show_progress {
             return self.download_with_progress(url).await;
@@ -121,6 +158,20 @@ impl RuntimeLoader {
 
         let bytes = response.bytes().await?;
         Ok(bytes.to_vec())
+    }
+
+    fn is_retryable(error: &Error) -> bool {
+        match error {
+            Error::Network(e) => {
+                if let Some(status) = e.status() {
+                    status.is_server_error() || status == reqwest::StatusCode::TOO_MANY_REQUESTS
+                } else {
+                    e.is_timeout() || e.is_connect() || e.is_request()
+                }
+            }
+            Error::Io(_) => true,
+            _ => false,
+        }
     }
 
     #[cfg(feature = "progress")]
@@ -258,6 +309,9 @@ impl Default for RuntimeLoader {
 pub struct RuntimeLoaderBuilder {
     cache_dir: Option<PathBuf>,
     cdn_sources: Option<Vec<CdnSource>>,
+    max_retries: Option<u32>,
+    initial_backoff_ms: Option<u64>,
+    max_backoff_ms: Option<u64>,
     #[cfg(feature = "progress")]
     show_progress: bool,
 }
@@ -274,6 +328,21 @@ impl RuntimeLoaderBuilder {
 
     pub fn cdn_sources(mut self, sources: Vec<CdnSource>) -> Self {
         self.cdn_sources = Some(sources);
+        self
+    }
+
+    pub fn max_retries(mut self, retries: u32) -> Self {
+        self.max_retries = Some(retries);
+        self
+    }
+
+    pub fn initial_backoff_ms(mut self, ms: u64) -> Self {
+        self.initial_backoff_ms = Some(ms);
+        self
+    }
+
+    pub fn max_backoff_ms(mut self, ms: u64) -> Self {
+        self.max_backoff_ms = Some(ms);
         self
     }
 
@@ -296,6 +365,11 @@ impl RuntimeLoaderBuilder {
             cdn_sources: self
                 .cdn_sources
                 .unwrap_or_else(|| vec![CdnSource::GitHubReleases, CdnSource::JsDelivr]),
+            max_retries: self.max_retries.unwrap_or(DEFAULT_MAX_RETRIES),
+            initial_backoff_ms: self
+                .initial_backoff_ms
+                .unwrap_or(DEFAULT_INITIAL_BACKOFF_MS),
+            max_backoff_ms: self.max_backoff_ms.unwrap_or(DEFAULT_MAX_BACKOFF_MS),
             #[cfg(feature = "progress")]
             show_progress: self.show_progress,
         })
@@ -347,6 +421,32 @@ mod tests {
             .unwrap();
 
         assert_eq!(loader.cdn_sources.len(), 1);
+    }
+
+    #[test]
+    fn test_builder_with_retry_config() {
+        let loader = RuntimeLoader::builder()
+            .max_retries(5)
+            .initial_backoff_ms(1000)
+            .max_backoff_ms(60_000)
+            .build()
+            .unwrap();
+
+        assert_eq!(loader.max_retries, 5);
+        assert_eq!(loader.initial_backoff_ms, 1000);
+        assert_eq!(loader.max_backoff_ms, 60_000);
+    }
+
+    #[test]
+    fn test_is_retryable() {
+        let io_err = Error::Io(std::io::Error::new(std::io::ErrorKind::TimedOut, "timeout"));
+        assert!(RuntimeLoader::is_retryable(&io_err));
+
+        let integrity_err = Error::IntegrityCheckFailed {
+            expected: "a".to_string(),
+            actual: "b".to_string(),
+        };
+        assert!(!RuntimeLoader::is_retryable(&integrity_err));
     }
 
     #[test]

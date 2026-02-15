@@ -47,12 +47,23 @@ jobs:
             wasmhub-builder:latest \
             ./scripts/build-all.sh
 
+      - name: Install optimization tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y brotli
+          npm install -g binaryen || true
+
+      - name: Optimize WASM binaries
+        run: ./scripts/optimize-wasm.sh
+
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
 
-          # Copy WASM binaries
+          # Copy WASM binaries and compressed variants
           find runtimes -name "*.wasm" -exec cp {} release-assets/ \;
+          find runtimes -name "*.wasm.gz" -exec cp {} release-assets/ \; 2>/dev/null || true
+          find runtimes -name "*.wasm.br" -exec cp {} release-assets/ \; 2>/dev/null || true
 
           # Copy per-runtime manifests with language prefix to avoid naming conflicts
           for manifest in runtimes/*/manifest.json; do
