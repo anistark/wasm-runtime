@@ -37,7 +37,7 @@ for wasm in "${RUNTIMES_DIR}"/*/*.wasm; do
 
     if [[ "${SKIP_WASM_OPT}" != "true" ]]; then
         OPTIMIZED="${wasm}.opt"
-        wasm-opt "-${OPT_LEVEL}" --strip-debug -o "${OPTIMIZED}" "${wasm}"
+        wasm-opt "-${OPT_LEVEL}" --enable-bulk-memory --strip-debug -o "${OPTIMIZED}" "${wasm}"
 
         SIZE_AFTER=$(stat -f%z "${OPTIMIZED}" 2>/dev/null || stat -c%s "${OPTIMIZED}")
         SAVINGS=$(( (SIZE_BEFORE - SIZE_AFTER) * 100 / SIZE_BEFORE ))
