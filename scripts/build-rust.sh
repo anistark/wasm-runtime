@@ -64,7 +64,7 @@ echo "  Output: ${OUTPUT_PATH}"
 
 pushd "${PROJECT_DIR}" > /dev/null
 cargo build --target "${TARGET}" --release
-BINARY_NAME=$(cargo metadata --format-version 1 --no-deps | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
+BINARY_NAME=$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[0].targets[] | select(.kind[] == "bin") | .name' | head -1)
 popd > /dev/null
 
 BUILT_WASM="${PROJECT_DIR}/target/${TARGET}/release/${BINARY_NAME}.wasm"
