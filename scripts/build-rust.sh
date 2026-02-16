@@ -77,7 +77,7 @@ cp "${BUILT_WASM}" "${OUTPUT_PATH}"
 
 if [[ "${OPTIMIZE}" == "true" ]] && command -v wasm-opt &> /dev/null; then
     echo "Optimizing with wasm-opt..."
-    wasm-opt -O3 "${OUTPUT_PATH}" -o "${OUTPUT_PATH}.opt"
+    wasm-opt -O3 --enable-bulk-memory "${OUTPUT_PATH}" -o "${OUTPUT_PATH}.opt"
     mv "${OUTPUT_PATH}.opt" "${OUTPUT_PATH}"
 fi
 
