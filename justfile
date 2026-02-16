@@ -75,11 +75,12 @@ publish-github:
     just release-github "${VERSION}"
 
 # Create a new release (tag + GitHub release + crates.io)
+
 # Usage: just release 0.2.0
 release version:
     #!/usr/bin/env bash
     set -euo pipefail
-    VERSION="{{version}}"
+    VERSION="{{ version }}"
     TAG="v${VERSION}"
 
     echo "Preparing release ${TAG}..."
@@ -138,7 +139,15 @@ release version:
 
     # Create GitHub release
     echo "Creating GitHub release..."
-    gh release create "${TAG}" --generate-notes --title "Release ${TAG}"
+    read -p "Release title [${TAG}]: " TITLE
+    TITLE="${TITLE:-${TAG}}"
+    read -p "Mark as pre-release? [y/N] " -n 1 -r
+    echo
+    PRERELEASE_FLAG=""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        PRERELEASE_FLAG="--prerelease"
+    fi
+    gh release create "${TAG}" --generate-notes --title "${TITLE}" ${PRERELEASE_FLAG}
 
     # Publish to crates.io
     echo "Publishing to crates.io..."
@@ -150,11 +159,12 @@ release version:
     echo "Check progress at: https://github.com/anistark/wasmhub/actions"
 
 # Create a release without publishing to crates.io
+
 # Usage: just release-github 0.2.0
 release-github version:
     #!/usr/bin/env bash
     set -euo pipefail
-    VERSION="{{version}}"
+    VERSION="{{ version }}"
     TAG="v${VERSION}"
 
     echo "Creating GitHub release ${TAG}..."
@@ -172,7 +182,9 @@ release-github version:
 
     git tag -a "${TAG}" -m "Release ${TAG}"
     git push origin "${TAG}"
-    gh release create "${TAG}" --generate-notes --title "Release ${TAG}"
+    read -p "Release title [Release ${TAG}]: " TITLE
+    TITLE="${TITLE:-Release ${TAG}}"
+    gh release create "${TAG}" --generate-notes --title "${TITLE}"
 
     echo "GitHub release ${TAG} created!"
     echo "Check build progress at: https://github.com/anistark/wasmhub/actions"
