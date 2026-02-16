@@ -47,6 +47,9 @@ jobs:
             wasmhub-builder:latest \
             ./scripts/build-all.sh
 
+      - name: Fix file permissions from Docker build
+        run: sudo chown -R $(id -u):$(id -g) runtimes/
+
       - name: Install optimization tools
         run: |
           sudo apt-get update
