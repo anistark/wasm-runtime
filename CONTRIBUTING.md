@@ -276,7 +276,7 @@ just publish
 just publish-github
 
 # Or with explicit version:
-just release 0.4.2
+just release 0.5.0
 ```
 
 ### Build Environment

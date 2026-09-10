@@ -97,7 +97,7 @@ const wasmBytes = await response.arrayBuffer();
 |----------|----------|------|--------|-------|
 | **Go** | 1.23 | 261 KB | ✅ Available | Built with TinyGo, supports filesystem, env, args, stdio |
 | **Rust** | 1.82 | 76 KB | ✅ Available | Full std library support with wasm32-wasip1 target |
-| **Node.js** | 20 | ~1.1 MB | 🚧 Alpha | Built with QuickJS (ES2020), supports eval, run, stdio, env, filesystem via WASI, and a CommonJS stdlib (`path`, `fs`, `crypto`, `url`, `stream`, `buffer`, …) |
+| **Node.js** | 20 | ~1.1 MB | 🚧 Alpha | Built with QuickJS (ES2020), supports eval, run, stdio, env, filesystem via WASI, a CommonJS stdlib (`path`, `fs`, `crypto`, `url`, `stream`, `buffer`, …), and inbound `net`/`http` servers over a host-provided socket |
 | **swc** | 73 | ~2.4 MB | 🚧 Alpha | TypeScript → JavaScript transpiler (tool, not a language runtime): strips types, lowers TSX and ES modules to CommonJS for the Node.js runtime. MVP-only WASM for interpreter compatibility |
 | **Python** | — | — | 🔜 Coming Soon | — |
 | **Ruby** | — | — | 🔜 Coming Soon | — |
